@@ -159,15 +159,16 @@ impl TodoInstance {
     }
 
     pub fn read_all(&mut self) {
-        for f in fs::read_dir(format!("{}/.tuffous/todos", self.path)).unwrap() {
-            if let Ok(fo) = f {
-                if let Some(x) = Todo::read_from_file(fo.path()) {
-                    self.todos.push(x)
-                } else {
-                    continue;
-                }
-            } else {
-                continue;
+        // check if the todos directory exists
+        let path: String = format!("{}/.tuffous/todos", self.path);
+        if fs::exists(&path).unwrap() == false {
+            init_repo(&self.path);
+        }
+
+        let entries = fs::read_dir(&path).unwrap();
+        for entry in entries.filter_map(Result::ok) {
+            if let Some(todo) = Todo::read_from_file(entry.path()) {
+                self.todos.push(todo);
             }
         }
     }
