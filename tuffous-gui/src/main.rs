@@ -5,9 +5,12 @@ use std::fmt::Debug;
 
 use chrono::{Datelike, Local};
 use iced::{
-    alignment, executor, theme, widget::{
-        button, column, container, horizontal_space, row, scrollable, text, text_input, vertical_space
-    }, window, Application, Color, Element, Length, Renderer, Settings, Theme
+    alignment, executor, theme,
+    widget::{
+        button, column, container, horizontal_space, row, scrollable, text, text_input,
+        vertical_space,
+    },
+    window, Application, Color, Element, Length, Renderer, Settings, Theme,
 };
 use iced_aw::ContextMenu;
 use tuffous_core::{util, Todo, TodoInstance};
@@ -236,12 +239,20 @@ impl App {
 
     fn view_todos(&self) -> iced::Element<Message> {
         container(if self.range.is_empty() && !self.search {
-            container(
+            container(ContextMenu::new(
                 appearance::icon(self.view.title(&self.instance, self.theme()).0)
                     .style(theme::Text::Color(self.style_sheet().gray))
                     .size(80)
-                    .width(Length::Fill),
-            )
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .vertical_alignment(alignment::Vertical::Center),
+                || {
+                    column(vec![iced::widget::button("create")
+                        .on_press(Message::CreateTodo)
+                        .into()])
+                    .into()
+                },
+            ))
             .center_x()
             .center_y()
             .width(Length::Fill)
@@ -282,24 +293,23 @@ impl App {
                                 row_c.push(horizontal_space(view.0).into());
                                 row_c.append(&mut view.1);
                                 vec.push(
-                                    container(container(
-                                        ContextMenu::new(
-                                        row(row_c),
-                                        || {
-                                            column(vec![
-                                                iced::widget::button("delete")
-                                                    .on_press(Message::TodoMessage(todo.id(), TodoMessage::Delete))
-                                                    .into(),
-                                                iced::widget::button("share")
-                                                    .on_press(Message::Share(todo.id()))
-                                                    .into(),
-                                            ])
-                                            .into()
-                                        }))
-                                    )
-                                        .align_x(alignment::Horizontal::Center)
-                                        .width(Length::Fill)
-                                        .into(),
+                                    container(container(ContextMenu::new(row(row_c), || {
+                                        column(vec![
+                                            iced::widget::button("delete")
+                                                .on_press(Message::TodoMessage(
+                                                    todo.id(),
+                                                    TodoMessage::Delete,
+                                                ))
+                                                .into(),
+                                            iced::widget::button("share")
+                                                .on_press(Message::Share(todo.id()))
+                                                .into(),
+                                        ])
+                                        .into()
+                                    })))
+                                    .align_x(alignment::Horizontal::Center)
+                                    .width(Length::Fill)
+                                    .into(),
                                 );
                             }
                         }
