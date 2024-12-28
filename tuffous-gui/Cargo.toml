@@ -16,4 +16,4 @@ once_cell = "*"
 serde = { version = "*", features = ["serde_derive", "derive"] }
 serde_json = "*"
 tuffous-core = { version = "*", path = "../tuffous-core" }
-
+iced_aw = { version = "0.7", default-features = false, features = ["context_menu"] }

@@ -1,15 +1,15 @@
 mod appearance;
 mod config;
 
+use std::fmt::Debug;
+
 use chrono::{Datelike, Local};
 use iced::{
-    alignment, executor, theme,
-    widget::{
-        button, column, container, horizontal_space, row, scrollable, text, text_input,
-        vertical_space,
-    },
-    window, Application, Color, Element, Length, Renderer, Settings, Theme,
+    alignment, executor, theme, widget::{
+        button, column, container, horizontal_space, row, scrollable, text, text_input, vertical_space
+    }, window, Application, Color, Element, Length, Renderer, Settings, Theme
 };
+use iced_aw::ContextMenu;
 use tuffous_core::{util, Todo, TodoInstance};
 
 struct App {
@@ -282,7 +282,21 @@ impl App {
                                 row_c.push(horizontal_space(view.0).into());
                                 row_c.append(&mut view.1);
                                 vec.push(
-                                    container(container(row(row_c)).max_width(1500))
+                                    container(container(
+                                        ContextMenu::new(
+                                        row(row_c),
+                                        || {
+                                            column(vec![
+                                                iced::widget::button("delete")
+                                                    .on_press(Message::TodoMessage(todo.id(), TodoMessage::Delete))
+                                                    .into(),
+                                                iced::widget::button("share")
+                                                    .on_press(Message::Share(todo.id()))
+                                                    .into(),
+                                            ])
+                                            .into()
+                                        }))
+                                    )
                                         .align_x(alignment::Horizontal::Center)
                                         .width(Length::Fill)
                                         .into(),
@@ -703,6 +717,9 @@ impl Application for App {
                 }
                 self.config.write();
             }
+            Message::Share(id) => {
+                println!("Sharing todo {}", id);
+            }
             _ => (),
         };
 
@@ -745,6 +762,7 @@ enum Message {
     CacheSearchContent(String),
     UpdateConfig(ConfigMessage),
     LoadFont(Result<(), iced::font::Error>),
+    Share(u64),
 }
 
 #[derive(Debug, Clone)]
